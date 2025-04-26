@@ -23,7 +23,7 @@ docker $ make
 
 ### Requirements
 
-Dependencies for debian
+Dependencies for Linux distributions using the `dnf` or `apt` package managers will automatically be installed for you. These include:
 
 - flex
 - bison
@@ -37,37 +37,38 @@ Dependencies for debian
 - wget
 - file
 
-### Environment variables
-
-After installation of the toolchain, the following environment variables need to be populated.
-
-`DEVKITXENON` is dependencing on your chosen installation prefix location.
-
-```
-DEVKITXENON="/usr/local/xenon"
-PATH="$PATH:$DEVKITXENON/bin:$DEVKITXENON/usr/bin"
-```
+If you are not using a Linux system with either the `dnf` or `apt` package manager, ensure the above equivalents are installed before running the main driving script to setup LibXenon, which is named `toolchain/build-xenon-toolchain`. See below on how to use it.
 
 ### Prefix
 
-If you want to choose your own prefix, prepend it to the `./build-xenon-toolchain` invocation.
+By default the prefix is set to `/usr/local/xenon`. If you want to choose your own prefix, prepend it to the `./build-xenon-toolchain` invocation, i.e. `PREFIX="/home/username/xenon" ./build-xenon-toolchain toolchain`.
 
-e.g. `PREFIX=/home/username/xenon ./build-xenon-toolchain toolchain`
-
-### Installing toolchain
+### Installing the toolchain
 
 ```
 ./build-xenon-toolchain toolchain
 ```
 
-### Install libxenon library
+### Installing the libxenon library
 
 ```
 ./build-xenon-toolchain libxenon
 ```
 
-### Install auxiliary libs
+### Installing auxiliary libs (libxenon, bin2s, zlib, libpng, bzip2, freetype, filesystems)
 
 ```
 ./build-xenon-toolchain libs
 ```
+
+### Environment variables
+
+After installation of the toolchain, the following environment variables need to be populated:
+
+```
+DEVKITXENON="/usr/local/xenon"
+PATH="${PATH:+${PATH}:}"$DEVKITXENON"/bin:"$DEVKITXENON"/usr/bin"
+```
+`DEVKITXENON` depends on your chosen installation prefix location. The default value is `/usr/local/xenon` unless you changed it.
+
+You may edit your ~/.bashrc to set these in every shell automatically. Alternatively, you may execute `./build-xenon-toolchain env-cmd` to install a command named `xenon-env`. When you run that command, it will set those variables in a new shell.
