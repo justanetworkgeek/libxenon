@@ -457,6 +457,7 @@ int elf_runFromDisk(char *filename) {
 int elf_runWithDeviceTree(void *elf_addr, int elf_size, void *dt_addr,
                           int dt_size) {
   int res, node;
+  uint32_t cpufreq;
 
   if (dt_size > ELF_DEVTREE_MAX_SIZE) {
     printf("[ELF loader] Device tree too big (> %d bytes) !\n",
@@ -523,6 +524,66 @@ int elf_runWithDeviceTree(void *elf_addr, int elf_size, void *dt_addr,
      the devtree\n"); return;
           }
   */
+
+  switch (xenon_get_speed()) {
+    case XENON_SPEED_FULL:
+    case XENON_SPEED_3_2: {
+      cpufreq = 3200000000;
+      break;
+    }
+    case XENON_SPEED_1_3: {
+      cpufreq = 1300000000;
+      break;
+    }
+    case XENON_SPEED_1_2: {
+      cpufreq = 1200000000;
+      break;
+    }
+    default: {
+      printf(" ! Weird CPU speed, assuming 3.2GHz\n");
+      cpufreq = 3200000000;
+      break;
+    }
+  }
+
+  node = fdt_path_offset(ELF_DEVTREE_START, "/cpus/Xenon,PPE@0");
+  if (node < 0) {
+    printf(" ! /cpus/Xenon,PPE@0 node not found in devtree\n");
+    return node;
+  }
+
+  res = fdt_setprop(ELF_DEVTREE_START, node, "clock-frequency", &cpufreq,
+                    sizeof(cpufreq));
+  if (res < 0) {
+    printf(" ! couldn't set /cpus/Xenon,PPE@0.clock-frequency property\n");
+    return res;
+  }
+
+  node = fdt_path_offset(ELF_DEVTREE_START, "/cpus/Xenon,PPE@1");
+  if (node < 0) {
+    printf(" ! /cpus/Xenon,PPE@1 node not found in devtree\n");
+    return node;
+  }
+
+  res = fdt_setprop(ELF_DEVTREE_START, node, "clock-frequency", &cpufreq,
+                    sizeof(cpufreq));
+  if (res < 0) {
+    printf(" ! couldn't set /cpus/Xenon,PPE@1.clock-frequency property\n");
+    return res;
+  }
+
+  node = fdt_path_offset(ELF_DEVTREE_START, "/cpus/Xenon,PPE@2");
+  if (node < 0) {
+    printf(" ! /cpus/Xenon,PPE@2 node not found in devtree\n");
+    return node;
+  }
+
+  res = fdt_setprop(ELF_DEVTREE_START, node, "clock-frequency", &cpufreq,
+                    sizeof(cpufreq));
+  if (res < 0) {
+    printf(" ! couldn't set /cpus/Xenon,PPE@2.clock-frequency property\n");
+    return res;
+  }
 
   res = fdt_pack(ELF_DEVTREE_START);
   if (res < 0) {
