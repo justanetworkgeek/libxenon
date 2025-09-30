@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <pci/io.h>
 #include <time/time.h>
 #include <xenon_nand/xenon_sfcx.h>
@@ -362,6 +363,13 @@ int updateXeLL(char *path)
     FILE *f;
     int i, j, k, status, startblock, current, offsetinblock, blockcnt, filelength;
     unsigned char *updxell, *user, *spare;
+	struct stat s;
+
+  	memset(&s, 0, sizeof(struct stat));
+	stat(path, &s);
+	long size = s.st_size;
+	if (size <= 0)	
+		return -1; //Invalid Filesize
     
     /* Check if updxell.bin is present */
     f = fopen(path, "rb");

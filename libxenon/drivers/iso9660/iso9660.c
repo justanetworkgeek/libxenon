@@ -1112,6 +1112,35 @@ static const devoptab_t dotab_iso9660 =
 	NULL // device data
 };
 
+static int verify_iso9660_disc(const DISC_INTERFACE *di)
+{
+	char sector_data[2048];
+	int is_joliet, i, blk = 0;
+
+	/* Check for joliet extensions */
+	is_joliet = 0;
+	for (i=1; i<=3; i++) {
+		blk = di->readSectors(16, 1, sector_data);
+		if (blk < 0) return blk;
+		if (memcmp(sector_data, "\02CD001", 6) == 0) {
+			is_joliet = isjoliet(sector_data+88);
+			if (is_joliet) break;
+		}
+	}
+
+	/* If that failed, go after standard/RockRidge ISO */
+	if (!is_joliet) {
+		/* Grab and check the volume descriptor */	
+		blk = di->readSectors(16, 1, sector_data);
+		if (blk < 0) return i;
+		if (memcmp(sector_data, "\01CD001", 6) != 0) {
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 bool ISO9660_Mount(const char* name, const DISC_INTERFACE *disc_interface)
 {
 	char *nameCopy;
@@ -1125,6 +1154,10 @@ bool ISO9660_Mount(const char* name, const DISC_INTERFACE *disc_interface)
 		return false;
 
 	if (!disc_interface->isInserted())
+		return false;
+	
+	// Verify that it's actually an ISO9660 formatted disc and not another format or not inserted
+	if (verify_iso9660_disc(disc_interface) != 0)
 		return false;
 
 	sprintf(devname, "%s:", name);

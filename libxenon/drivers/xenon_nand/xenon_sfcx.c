@@ -560,6 +560,7 @@ int try_rawflash(char *filename)
 {
 	struct stat s;
 
+  	memset(&s, 0, sizeof(struct stat));
 	stat(filename, &s);
 	long size = s.st_size;
 	if (size <= 0)	
