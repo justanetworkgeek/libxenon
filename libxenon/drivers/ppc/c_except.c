@@ -12,7 +12,6 @@
 #include <xenos/xenos.h>
 #include <xetypes.h>
 #include <usb/usbmain.h>
-#include <network/network.h>
 
 #define CPU_STACK_TRACE_DEPTH		10
 
