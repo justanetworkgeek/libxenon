@@ -1,4 +1,6 @@
 #include <console/console.h>
+#include <console/telnet_console.h>
+#include <input/input.h>
 #include <ppc/cache.h>
 #include <ppc/register.h>
 #include <stdio.h>
@@ -9,6 +11,7 @@
 #include <xenon_uart/xenon_uart.h>
 #include <xenos/xenos.h>
 #include <xetypes.h>
+#include <usb/usbmain.h>
 
 #define CPU_STACK_TRACE_DEPTH		10
 
@@ -76,7 +79,8 @@ void crashdump(u32 exception,u64 * context)
 	console_set_colors(0x000080ff, 0xffffffff);
 	console_init();
 	console_clrscr();
-	
+	telnet_console_init();
+
 	if (exception){
 		sprintf(text,"\nException vector! (%p)\n\n",exception);
 	}else{
@@ -99,23 +103,52 @@ void crashdump(u32 exception,u64 * context)
 	
 	_cpu_print_stack((void*)(u32)context[36],(void*)(u32)context[32],(void*)(u32)context[1]);
 	
-	strcat(text,"\n\nOn uart: 'x'=Xell, 'h'=Halt, 'r'=Reboot\n\n");
+	strcat(text,"\n\nOn uart or telnet: 'x'=Xell, 'h'=Halt, 'r'=Reboot\n");
+	strcat(text,"On controller: 'x'=Xell, 'y'=Halt, 'b'=Reboot\n");
 
 	flush_console();
 
+	// Initialize 360 controller - taken from XeLL kbootconf.c
+	struct controller_data_s ctrl;
+	struct controller_data_s old_ctrl;
+
 	for(;;){
-		switch(getch()){
-			case 'x':
+		// Handle controller
+		if (get_controller_data(&ctrl, 0)) {
+			if (ctrl.x > old_ctrl.x){
 				exit(0);
+				for(;;);
 				break;
-			case 'h':
+			} else if (ctrl.y > old_ctrl.y){
 				xenon_smc_power_shutdown();
 				for(;;);
 				break;
-			case 'r':
+			} else if (ctrl.b > old_ctrl.b)
 				xenon_smc_power_reboot();
 				for(;;);
 				break;
-		}
+			old_ctrl=ctrl;
+        	}
+
+		usb_do_poll();
+
+		// Handle telnet or UART
+		if(kbhit()){
+			switch(getch()){
+				case 'x':
+					// Try reloading XeLL from NAND. (1f, 2f, gggggg)
+					// Platform specific functioanlity defined in libxenon/drivers/newlib/xenon_syscalls.c
+					exit(0);
+					break;
+				case 'h':
+					xenon_smc_power_shutdown();
+					for(;;);
+					break;
+				case 'r':
+					xenon_smc_power_reboot();
+					for(;;);
+					break;
+			}
+	}
 	}
 }
