@@ -80,7 +80,6 @@ void crashdump(u32 exception,u64 * context)
 	console_set_colors(0x000080ff, 0xffffffff);
 	console_init();
 	console_clrscr();
-	telnet_console_init();
 
 	if (exception){
 		sprintf(text,"\nException vector! (%p)\n\n",exception);
@@ -112,10 +111,6 @@ void crashdump(u32 exception,u64 * context)
 	// Initialize 360 controller - taken from XeLL kbootconf.c
 	struct controller_data_s ctrl;
 	struct controller_data_s old_ctrl;
-
-	// For telnet handling
-	network_init();
-	network_print_config();
 	
 	for(;;){
 		// Handle controller
@@ -136,9 +131,8 @@ void crashdump(u32 exception,u64 * context)
         	}
 
 		usb_do_poll();
-		network_poll();
 
-		// Handle telnet or UART
+		// Handle UART
 		if(kbhit()){
 			switch(getch()){
 				case 'x':
