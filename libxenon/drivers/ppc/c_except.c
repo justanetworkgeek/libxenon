@@ -12,6 +12,7 @@
 #include <xenos/xenos.h>
 #include <xetypes.h>
 #include <usb/usbmain.h>
+#include <network/network.h>
 
 #define CPU_STACK_TRACE_DEPTH		10
 
@@ -112,6 +113,10 @@ void crashdump(u32 exception,u64 * context)
 	struct controller_data_s ctrl;
 	struct controller_data_s old_ctrl;
 
+	// For telnet handling
+	network_init();
+	network_print_config();
+	
 	for(;;){
 		// Handle controller
 		if (get_controller_data(&ctrl, 0)) {
@@ -131,6 +136,7 @@ void crashdump(u32 exception,u64 * context)
         	}
 
 		usb_do_poll();
+		network_poll();
 
 		// Handle telnet or UART
 		if(kbhit()){
