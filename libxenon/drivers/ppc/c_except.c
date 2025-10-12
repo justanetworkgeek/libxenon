@@ -114,20 +114,21 @@ void crashdump(u32 exception,u64 * context)
 	for(;;){
 		// Handle controller
 		if (get_controller_data(&ctrl, 0)) {
-			if (ctrl.x > old_ctrl.x){
+			if (ctrl.x){
 				exit(0);
 				for(;;);
 				break;
-			} else if (ctrl.y > old_ctrl.y){
+			} if (ctrl.y){
 				xenon_smc_power_shutdown();
 				for(;;);
 				break;
-			} else if (ctrl.b > old_ctrl.b)
+			} if (ctrl.b){
 				xenon_smc_power_reboot();
 				for(;;);
 				break;
+			}
 			old_ctrl=ctrl;
-        	}
+		}
 
 		usb_do_poll();
 
