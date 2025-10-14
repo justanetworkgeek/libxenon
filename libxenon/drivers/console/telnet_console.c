@@ -163,7 +163,7 @@ static err_t telnet_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t e
 
         if (recv_len > 2) {
             if ((recv_buf[recv_len - 2] == '\r')&(recv_buf[recv_len - 1] == '\n')) {
-                ParseArgs(recv_buf, recv_len);
+                //ParseArgs(recv_buf, recv_len);
                 //DebugBreak();
                 //tel_tx_str(recv_buf, recv_len);
                 //efface
