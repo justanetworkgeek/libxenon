@@ -146,7 +146,6 @@ unsigned char recv_buf[512];
 /*===========================================================================*/
 static err_t telnet_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err) {
 
-#if 0
     if (err == ERR_OK && p != NULL) {
         unsigned char * payload = (unsigned char*) p->payload;
 
@@ -178,7 +177,6 @@ static err_t telnet_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t e
     if (err == ERR_OK && p == NULL) {
         telnet_close(pcb);
     }
-#endif
 
     return ERR_OK;
 }
