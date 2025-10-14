@@ -166,9 +166,10 @@ static err_t telnet_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t e
                 //ParseArgs(recv_buf, recv_len);
                 //DebugBreak();
                 //tel_tx_str(recv_buf, recv_len);
-                //efface
+                // Echo char
+                telnet_console_tx_print(recv_buf, recv_len);
                 recv_len = 0;
-                memset(recv_buf, 0, 512);
+                memset(recv_buf, 0, 512); // clear
             }
         }
     }

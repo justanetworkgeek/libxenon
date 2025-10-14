@@ -79,6 +79,7 @@ void crashdump(u32 exception,u64 * context)
 	console_set_colors(0x000080ff, 0xffffffff);
 	console_init();
 	console_clrscr();
+	telnet_console_init();
 
 	if (exception){
 		sprintf(text,"\nException vector! (%p)\n\n",exception);
