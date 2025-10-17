@@ -140,8 +140,8 @@ static void telnet_send(struct tcp_pcb *pcb, TEL_TXST *st) {
 }
 
 //recv buffer ...
-extern int recv_len;
-extern unsigned char recv_buf[512];
+int recv_len;
+unsigned char recv_buf[512];
 
 /*===========================================================================*/
 static err_t telnet_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err) {
