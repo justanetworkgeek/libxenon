@@ -79,6 +79,8 @@ void crashdump(u32 exception,u64 * context)
 	console_set_colors(0x000080ff, 0xffffffff);
 	console_init();
 	console_clrscr();
+	network_init();
+	network_print_config();
 	telnet_console_init();
 
 	if (exception){
@@ -103,8 +105,7 @@ void crashdump(u32 exception,u64 * context)
 	
 	_cpu_print_stack((void*)(u32)context[36],(void*)(u32)context[32],(void*)(u32)context[1]);
 	
-	strcat(text,"\n\nOn uart or telnet: 'x'=Xell, 'h'=Halt, 'r'=Reboot\n");
-	strcat(text,"On controller: 'x'=Xell, 'y'=Halt, 'b'=Reboot\n");
+	strcat(text,"\n\nOn controller, UART or telnet: 'x'=Xell, 'y'=Halt, 'b'=Reboot\n");
 
 	flush_console();
 
@@ -112,6 +113,9 @@ void crashdump(u32 exception,u64 * context)
 	struct controller_data_s ctrl;
 	struct controller_data_s old_ctrl;
 	
+	// For telnet handling.
+	unsigned char latest_telnet_char;
+
 	for(;;){
 		// Handle controller
 		if (get_controller_data(&ctrl, 0)) {
@@ -131,7 +135,12 @@ void crashdump(u32 exception,u64 * context)
 			old_ctrl=ctrl;
 		}
 
+		// Controller update
 		usb_do_poll();
+
+		// Telnet update
+		network_poll();
+		latest_telnet_char = telnet_recv_buf[0];
 
 		// Handle UART
 		if(kbhit()){
@@ -141,15 +150,30 @@ void crashdump(u32 exception,u64 * context)
 					// Platform specific functioanlity defined in libxenon/drivers/newlib/xenon_syscalls.c
 					exit(0);
 					break;
-				case 'h':
+				case 'y':
 					xenon_smc_power_shutdown();
 					for(;;);
 					break;
-				case 'r':
+				case 'b':
 					xenon_smc_power_reboot();
 					for(;;);
 					break;
 			}
-	}
+		}
+
+		// Handle telnet
+		if(latest_telnet_char == 'x'){
+			exit(0);
+			for(;;);
+			break;
+		} else if(latest_telnet_char == 'y'){
+			xenon_smc_power_shutdown();
+			for(;;);
+			break;
+		} else if(latest_telnet_char == 'b'){
+			xenon_smc_power_reboot();
+			for(;;);
+			break;
+		} 
 	}
 }
