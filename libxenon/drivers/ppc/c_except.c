@@ -12,6 +12,7 @@
 #include <xenos/xenos.h>
 #include <xetypes.h>
 #include <usb/usbmain.h>
+#include <network/network.h>
 
 #define CPU_STACK_TRACE_DEPTH		10
 
@@ -79,7 +80,9 @@ void crashdump(u32 exception,u64 * context)
 	console_set_colors(0x000080ff, 0xffffffff);
 	console_init();
 	console_clrscr();
+	printf("Program crashed - reinitializing hardware in this context...\n");
 	network_init();
+	usb_init();
 	network_print_config();
 	telnet_console_init();
 
@@ -104,7 +107,7 @@ void crashdump(u32 exception,u64 * context)
 	flush_console();
 	
 	_cpu_print_stack((void*)(u32)context[36],(void*)(u32)context[32],(void*)(u32)context[1]);
-	
+
 	strcat(text,"\n\nOn controller, UART or telnet: 'x'=Xell, 'y'=Halt, 'b'=Reboot\n");
 
 	flush_console();
@@ -131,7 +134,7 @@ void crashdump(u32 exception,u64 * context)
 				xenon_smc_power_reboot();
 				for(;;);
 				break;
-			}
+			} 
 			old_ctrl=ctrl;
 		}
 
