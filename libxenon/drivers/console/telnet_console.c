@@ -39,7 +39,7 @@ static int session_states = TELNET_DISCONNECTED;
 
 static struct tcp_pcb *tel_pcb;
 
-extern void (*stdout_hook)(const char *buf, int len);
+extern void (*stdout_hook)(char *buf, int len);
 
 /**==========================================================================*/
 /* Forward Declarations                                                      */
@@ -82,7 +82,7 @@ void telnet_console_close(void) {
 }
 
 /*===========================================================================*/
-void telnet_console_tx_print(const char *buf, int bc) {
+void telnet_console_tx_print(char *buf, int bc) {
     TEL_TXST *st;
 
     if (session_states != TELNET_CONNECTED) {
