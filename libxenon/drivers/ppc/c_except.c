@@ -86,12 +86,15 @@ void crashdump(u32 exception,u64 * context)
 	network_print_config();
 	telnet_console_init();
 
+	// Give some extra time to catch the trace
+	mdelay(3000);
+
 	if (exception){
 		sprintf(text,"\nException vector! (%p)\n\n",exception);
 	}else{
 		strcpy(text,"\nSegmentation fault!\n\n");
 	}
-		
+
 	flush_console();
 	
 	sprintf(text,"%spir=%016llx dar=%016llx\nsr0=%016llx sr1=%016llx lr=%016llx\n\n",
