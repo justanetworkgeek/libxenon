@@ -89,30 +89,36 @@ void crashdump(u32 exception,u64 * context)
 	// Give some extra time to catch the trace
 	mdelay(3000);
 
+	// In case the trace is missed, print it again exactly as it was.
+	reprint:
+
 	if (exception){
 		sprintf(text,"\nException vector! (%p)\n\n",exception);
 	}else{
 		strcpy(text,"\nSegmentation fault!\n\n");
 	}
 
+	printf(text);
 	flush_console();
 	
 	sprintf(text,"%spir=%016llx dar=%016llx\nsr0=%016llx sr1=%016llx lr=%016llx\n\n",
 			text,context[39],context[38],context[36],context[37],context[32]);
 	
+	printf(text);
 	flush_console();
-	
+
 	int i;
 	for(i=0;i<8;++i)
 		sprintf(text,"%s%02d=%016llx %02d=%016llx %02d=%016llx %02d=%016llx\n",
 				text,i,context[i],i+8,context[i+8],i+16,context[i+16],i+24,context[i+24]);
 	
+	printf(text);
 	flush_console();
 	
 	_cpu_print_stack((void*)(u32)context[36],(void*)(u32)context[32],(void*)(u32)context[1]);
 
-	strcat(text,"\n\nOn controller, UART or telnet: 'x'=Xell, 'y'=Halt, 'b'=Reboot\n");
-
+	strcat(text,"\n\nOn controller, UART or telnet: 'x'=Xell, 'y'=Halt, 'b'=Reboot, 'a'=Reprint stack trace.\n");
+	printf(text);
 	flush_console();
 
 	// Initialize 360 controller - taken from XeLL kbootconf.c
@@ -137,7 +143,9 @@ void crashdump(u32 exception,u64 * context)
 				xenon_smc_power_reboot();
 				for(;;);
 				break;
-			} 
+			} if (ctrl.a){
+				goto reprint;
+			}
 			old_ctrl=ctrl;
 		}
 
@@ -164,6 +172,8 @@ void crashdump(u32 exception,u64 * context)
 					xenon_smc_power_reboot();
 					for(;;);
 					break;
+				case 'a':
+					goto reprint;
 			}
 		}
 
@@ -180,6 +190,8 @@ void crashdump(u32 exception,u64 * context)
 			xenon_smc_power_reboot();
 			for(;;);
 			break;
-		} 
+		} else if(latest_telnet_char == 'a'){
+			goto reprint;
+		}
 	}
 }
