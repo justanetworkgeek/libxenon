@@ -119,7 +119,7 @@ void crashdump(u32 exception,u64 * context)
 
 	// This will print to screen for a user.
 	strcat(text,"\n\nOn controller: 'x'=Xell, 'y'=Halt, 'b'=Reboot, 'a'=Reprint stack trace.\n");
-	strcat(text,"\n\nOn UART or Telnet: 'x'=Xell, 'h'=Halt, 'r'=Reboot, 'p'=Reprint stack trace.\n");
+	strcat(text,"On UART or Telnet: 'x'=Xell, 'h'=Halt, 'r'=Reboot, 'p'=Reprint stack trace.\n");
 
 	printf(text);
 	flush_console();
