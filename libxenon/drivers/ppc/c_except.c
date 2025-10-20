@@ -117,7 +117,10 @@ void crashdump(u32 exception,u64 * context)
 	
 	_cpu_print_stack((void*)(u32)context[36],(void*)(u32)context[32],(void*)(u32)context[1]);
 
-	strcat(text,"\n\nOn controller, UART or telnet: 'x'=Xell, 'y'=Halt, 'b'=Reboot, 'a'=Reprint stack trace.\n");
+	// This will print to screen for a user.
+	strcat(text,"\n\nOn controller: 'x'=Xell, 'y'=Halt, 'b'=Reboot, 'a'=Reprint stack trace.\n");
+	strcat(text,"\n\nOn UART or Telnet: 'x'=Xell, 'h'=Halt, 'r'=Reboot, 'p'=Reprint stack trace.\n");
+
 	printf(text);
 	flush_console();
 
@@ -164,15 +167,15 @@ void crashdump(u32 exception,u64 * context)
 					// Platform specific functioanlity defined in libxenon/drivers/newlib/xenon_syscalls.c
 					exit(0);
 					break;
-				case 'y':
+				case 'h':
 					xenon_smc_power_shutdown();
 					for(;;);
 					break;
-				case 'b':
+				case 'r':
 					xenon_smc_power_reboot();
 					for(;;);
 					break;
-				case 'a':
+				case 'p':
 					goto reprint;
 			}
 		}
@@ -182,15 +185,15 @@ void crashdump(u32 exception,u64 * context)
 			exit(0);
 			for(;;);
 			break;
-		} else if(latest_telnet_char == 'y'){
+		} else if(latest_telnet_char == 'h'){
 			xenon_smc_power_shutdown();
 			for(;;);
 			break;
-		} else if(latest_telnet_char == 'b'){
+		} else if(latest_telnet_char == 'r'){
 			xenon_smc_power_reboot();
 			for(;;);
 			break;
-		} else if(latest_telnet_char == 'a'){
+		} else if(latest_telnet_char == 'p'){
 			goto reprint;
 		}
 	}
